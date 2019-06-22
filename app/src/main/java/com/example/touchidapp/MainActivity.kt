@@ -43,4 +43,152 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
+
+    private fun startAuthentication() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (checkFingerPrintSensor()) {
+
+                var authenticationCallback = object : FingerprintManager.AuthenticationCallback() {
+
+                    override fun onAuthenticationSucceeded(result: FingerprintManager.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+
+
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        super.onAuthenticationFailed()
+
+
+                    }
+                }
+
+                generateKey()
+                val cipher = generateCipher()
+                if (cipher != null) {
+
+                    val cryptoObject = FingerprintManager.CryptoObject(cipher)
+                    val cancellationSignal = CancellationSignal()
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                        return
+                    }
+                    fingerprintManager!!.authenticate(cryptoObject, cancellationSignal, 0, authenticationCallback, null)
+                }
+            }
+
+
+        }
+    }
+
+    private fun checkFingerPrintSensor(): Boolean {
+
+
+        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            fingerprintManager = getSystemService(Context.FINGERPRINT_SERVICE) as FingerprintManager
+
+            try {
+
+                if (!fingerprintManager!!.isHardwareDetected) {
+
+
+                }
+                if (!fingerprintManager!!.hasEnrolledFingerprints()) {
+
+
+                }
+                if (!keyguardManager.isKeyguardSecure) {
+
+
+                }
+
+            } catch (se: SecurityException) {
+                se.printStackTrace()
+                throw (se)
+            }
+        }
+
+        return true
+
+    }
+
+    private fun generateKey() {
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore")
+        } catch (e: KeyStoreException) {
+            e.printStackTrace()
+            throw (e)
+        }
+
+        try {
+            keyStore!!.load(null)
+            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+            throw (e)
+        } catch (e: NoSuchProviderException) {
+            e.printStackTrace()
+            throw (e)
+        } catch (e: CertificateException) {
+            e.printStackTrace()
+            throw (e)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            throw (e)
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val keyGenParameterSpec = KeyGenParameterSpec.Builder(KEY_NAME, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setUserAuthenticationRequired(true)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    .build()
+
+            try {
+                keyGenerator!!.init(keyGenParameterSpec)
+
+                keyGenerator!!.generateKey()
+            } catch (e: InvalidAlgorithmParameterException) {
+                e.printStackTrace()
+            }
+        }
+
+    }
+
+    private fun generateCipher(): Cipher? {
+        var cipher: Cipher? = null
+
+        try {
+            cipher = Cipher.getInstance(
+                    KeyProperties.KEY_ALGORITHM_AES + "/" +
+                            KeyProperties.BLOCK_MODE_CBC + "/" +
+                            KeyProperties.ENCRYPTION_PADDING_PKCS7)
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+        } catch (e: NoSuchPaddingException) {
+            e.printStackTrace()
+        }
+
+        try {
+            keyStore!!.load(null)
+            val key = keyStore!!.getKey(KEY_NAME, null)
+            cipher!!.init(Cipher.ENCRYPT_MODE, key)
+        } catch (e: KeyStoreException) {
+            e.printStackTrace()
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+        } catch (e: UnrecoverableKeyException) {
+            e.printStackTrace()
+        } catch (e: InvalidKeyException) {
+            e.printStackTrace()
+        } catch (e: CertificateException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return cipher
+    }
 }
