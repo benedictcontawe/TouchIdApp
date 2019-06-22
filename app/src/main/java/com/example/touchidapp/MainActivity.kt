@@ -49,7 +49,13 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        startAuthentication()
+        if (TouchIDHelper.isTouchIdAvailable(this)) {
+            Toast.makeText(this, "Touch ID is supported in this device", Toast.LENGTH_SHORT).show()
+            startAuthentication();
+        }
+        else {
+            Toast.makeText(this, "Touch ID is not supported in this device", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun startAuthentication() {

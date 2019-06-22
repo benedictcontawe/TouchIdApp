@@ -8,7 +8,7 @@ class TouchIDHelper {
 
     companion object {
 
-        fun IsTouchIdAvailable(context: Context): Boolean {
+        fun isTouchIdAvailable(context: Context): Boolean {
             var result = false
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 //Fingerprint API only available on from Android 6.0 (M)
