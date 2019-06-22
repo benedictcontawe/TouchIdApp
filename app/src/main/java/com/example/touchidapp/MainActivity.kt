@@ -31,6 +31,8 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.NoSuchPaddingException
 
+import kotlinx.android.synthetic.main.activity_main.*
+
 class MainActivity : AppCompatActivity() {
 
     private var keyStore: KeyStore? = null
@@ -44,6 +46,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        startAuthentication()
+    }
+
     private fun startAuthentication() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             if (checkFingerPrintSensor()) {
@@ -53,13 +61,14 @@ class MainActivity : AppCompatActivity() {
                     override fun onAuthenticationSucceeded(result: FingerprintManager.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
 
-
+                        ic_fingerprint.setImageResource(R.drawable.ic_touch_id_success_white)
                     }
 
                     override fun onAuthenticationFailed() {
                         super.onAuthenticationFailed()
 
-
+                        ic_fingerprint.setImageResource(R.drawable.ic_touch_id_error_white)
+                        startAuthentication()
                     }
                 }
 
