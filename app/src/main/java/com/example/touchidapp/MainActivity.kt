@@ -60,13 +60,13 @@ class MainActivity : AppCompatActivity() {
 
                     override fun onAuthenticationSucceeded(result: FingerprintManager.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
-
+                        Toast.makeText(this@MainActivity,"onAuthenticationSucceeded()",Toast.LENGTH_SHORT)
                         ic_fingerprint.setImageResource(R.drawable.ic_touch_id_success_white)
                     }
 
                     override fun onAuthenticationFailed() {
                         super.onAuthenticationFailed()
-
+                        Toast.makeText(this@MainActivity,"onAuthenticationFailed()",Toast.LENGTH_SHORT)
                         ic_fingerprint.setImageResource(R.drawable.ic_touch_id_error_white)
                         startAuthentication()
                     }
